@@ -32,6 +32,8 @@ const App = () => (
           <Route path="/iletisim" element={<Contact />} />
           <Route path="/gizlilik" element={<Privacy />} />
           <Route path="/kvkk" element={<KVKK />} />
+          <Route path="/giris" element={<Login />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
