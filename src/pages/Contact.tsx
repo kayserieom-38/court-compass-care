@@ -1,24 +1,41 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, MessageCircle, Send } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const { toast } = useToast();
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.phone.trim() || !form.message.trim()) {
       toast({ title: "Hata", description: "Lütfen gerekli alanları doldurun.", variant: "destructive" });
       return;
     }
-    toast({ title: "Mesajınız Gönderildi", description: "En kısa sürede sizinle iletişime geçeceğiz." });
-    setForm({ name: "", phone: "", email: "", message: "" });
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('notify-contact', {
+        body: { name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim(), message: form.message.trim() },
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Mesajınız Gönderildi", description: "En kısa sürede sizinle iletişime geçeceğiz." });
+      setForm({ name: "", phone: "", email: "", message: "" });
+    } catch (err) {
+      console.error('Submit error:', err);
+      toast({ title: "Hata", description: "Mesaj gönderilemedi. Lütfen tekrar deneyin.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,9 +129,9 @@ const Contact = () => {
                     <label className="text-sm font-medium text-foreground mb-1 block">Mesajınız *</label>
                     <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Hukuki konunuzu kısaca açıklayın..." rows={5} maxLength={1000} />
                   </div>
-                  <Button type="submit" className="w-full bg-gold hover:bg-gold-dark text-accent-foreground font-semibold">
-                    <Send className="mr-2 h-4 w-4" />
-                    Mesaj Gönder
+                  <Button type="submit" disabled={loading} className="w-full bg-gold hover:bg-gold-dark text-accent-foreground font-semibold">
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                    {loading ? "Gönderiliyor..." : "Mesaj Gönder"}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
                     Formunuzu göndererek <a href="/kvkk" className="text-gold underline">KVKK aydınlatma metnini</a> okuduğunuzu kabul edersiniz.
