@@ -11,15 +11,31 @@ import { supabase } from "@/integrations/supabase/client";
 const Contact = () => {
   const { toast } = useToast();
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.phone.trim() || !form.message.trim()) {
       toast({ title: "Hata", description: "Lütfen gerekli alanları doldurun.", variant: "destructive" });
       return;
     }
-    toast({ title: "Mesajınız Gönderildi", description: "En kısa sürede sizinle iletişime geçeceğiz." });
-    setForm({ name: "", phone: "", email: "", message: "" });
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('notify-contact', {
+        body: { name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim(), message: form.message.trim() },
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Mesajınız Gönderildi", description: "En kısa sürede sizinle iletişime geçeceğiz." });
+      setForm({ name: "", phone: "", email: "", message: "" });
+    } catch (err) {
+      console.error('Submit error:', err);
+      toast({ title: "Hata", description: "Mesaj gönderilemedi. Lütfen tekrar deneyin.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
