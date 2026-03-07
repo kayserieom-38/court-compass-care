@@ -129,9 +129,9 @@ const Contact = () => {
                     <label className="text-sm font-medium text-foreground mb-1 block">Mesajınız *</label>
                     <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Hukuki konunuzu kısaca açıklayın..." rows={5} maxLength={1000} />
                   </div>
-                  <Button type="submit" className="w-full bg-gold hover:bg-gold-dark text-accent-foreground font-semibold">
-                    <Send className="mr-2 h-4 w-4" />
-                    Mesaj Gönder
+                  <Button type="submit" disabled={loading} className="w-full bg-gold hover:bg-gold-dark text-accent-foreground font-semibold">
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                    {loading ? "Gönderiliyor..." : "Mesaj Gönder"}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
                     Formunuzu göndererek <a href="/kvkk" className="text-gold underline">KVKK aydınlatma metnini</a> okuduğunuzu kabul edersiniz.
